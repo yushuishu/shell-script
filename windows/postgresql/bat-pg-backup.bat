@@ -9,7 +9,7 @@ set "PG_DATA=E:\application\postgresql14\data"
 REM 备份文件存储目录
 set "PG_BACKUP_DIR=D:\pg_backup"
 REM 备份的数据库
-set "PG_BACKUP_DB_NAME=cs31_prod"
+set "PG_BACKUP_DB_NAME=demo"
 REM 删除 ... 天之前的备份文件
 set "DEL_BACKUP_DAY=7"
 REM 备份数据库ip
@@ -19,8 +19,14 @@ set "PG_PORT=5432"
 REM 用户名
 set "PG_USER=postgres"
 REM 用户密码
-set "PG_PASSWORD=1"
+set "PG_PASSWORD=123456"
 REM ====================================================================================================================
+
+REM 当前脚本目录
+set "script_dir=%~dp0"
+REM 日志文件
+set "log_file=%script_dir%bat-pg-backup.log"
+echo log: "%log_file%"
 
 REM 获取当前日期
 for /f "tokens=1-3 delims=-/. " %%i in ("%date%") do (
@@ -30,8 +36,14 @@ for /f "tokens=1-3 delims=-/. " %%i in ("%date%") do (
 )
 set "PG_BACKUP_DATE=%year%-%month%-%day%"
 
+REM 日志文件追加当前执行的日期，元数据
+echo.>>%log_file%
+<nul set /p="********************************************** %PG_BACKUP_DATE% **********************************************" >> %log_file%
+echo.>>%log_file%
+
 REM 查找当前日期，有多少个备份文件
-for /f %%A in ('dir /b "%PG_BACKUP_DIR%\%PG_BACKUP_DB_NAME%_%PG_BACKUP_DATE%_*.backup" ^| find /c /v ""') do set "file_count=%%A + 1"
+set file_count=0
+for /f %%A in ('dir /b "%PG_BACKUP_DIR%\%PG_BACKUP_DB_NAME%_%PG_BACKUP_DATE%_*.backup" ^| find /c /v ""') do set /a "file_count=%%A + 1"
 
 REM 当前要备份的文件路径和文件名
 set "pg_backup_file=%PG_BACKUP_DIR%\%PG_BACKUP_DB_NAME%_%PG_BACKUP_DATE%_%file_count%.backup"
@@ -49,7 +61,7 @@ if exist "%long_ago_backup_file%" (
 )
 
 REM 执行数据库备份命令，当前时刻的数据，即今天的数据
-REM "%PG_HOME%\pg_dump.exe" -h %PG_HOST% -p %PG_PORT% -U %PG_USER% -w -Fc -b -v -f "%pg_backup_file%" %PG_BACKUP_DB_NAME%
+"%PG_HOME%\pg_dump.exe" -h %PG_HOST% -p %PG_PORT% -U %PG_USER% -W -Fc -b -v -f "%pg_backup_file%" %PG_BACKUP_DB_NAME% >> "%log_file%" 2>&1
 
 pause
 
