@@ -9,7 +9,7 @@ set "PG_DATA=E:\application\postgresql14\data"
 REM 备份文件存储目录
 set "PG_BACKUP_DIR=D:\pg_backup"
 REM 备份的数据库
-set "PG_BACKUP_DB_NAME=cs31_test"
+set "PG_BACKUP_DB_NAME=demo"
 REM 删除 ... 天之前的备份文件
 set "DEL_BACKUP_DAY=7"
 REM 备份数据库ip
@@ -50,7 +50,7 @@ if exist "%long_ago_backup_file%" (
 )
 
 REM 执行数据库备份命令，当前时刻的数据，即今天的数据
-"%PG_HOME%\pg_dump.exe" -h %PG_HOST% -p %PG_PORT% -U %PG_USER% -W -Fc -b -v -f "%pg_backup_file%" %PG_BACKUP_DB_NAME% >> "%log_file%"
+"%PG_HOME%\pg_dump.exe" -h %PG_HOST% -p %PG_PORT% -U %PG_USER% -W -Fc -b -v -f "%pg_backup_file%" %PG_BACKUP_DB_NAME%
 
 pause
 
