@@ -27,15 +27,16 @@ if [ -n "$1" ]; then
         echo "用途：备份指定的数据库"
         echo "参数：参数                    是否必传    说明"
         echo "      --help; -help; -h        false      查看脚本使用说明"
-        echo "      -db                      false      指定要备份的数据库，默认备份的数据库是：demo"
+        echo "      -n                       false      指定要备份的数据库，默认备份的数据库是：demo"
         echo "备注：备份pg数据库，不用考虑到权限问题，必须切换到postgres用户才可以，脚本会给当前用户创建一个软连接执行pg_dump"
         echo "      如果当前是普通用户，不是root等具有更高级的用户，可能没有权限在/usr/sbin目录中创建软连接，就需要修改脚本，或修改用户的权限"
         echo "************************************************************************"
         exit 0
     else
-        while getopts ":db:" opt; do
+        while getopts ":n:" opt; do
             case $opt in
-            h)
+            n)
+                PG_BACKUP_DB_NAME="$OPTARG"
                 echo "指定要备份的数据库: $OPTARG"
                 ;;
             \?)

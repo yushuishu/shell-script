@@ -1,6 +1,8 @@
 @echo off
 setlocal EnableExtensions
 
+REM 用途：备份pg数据库
+
 REM ================================================== 使用此脚本，只需修改这里的变量即可 ===================================
 REM postgresql 安装目录
 set "PG_HOME=E:\application\postgresql14\bin"
