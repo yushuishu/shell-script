@@ -5,7 +5,7 @@
 if [ -n "$1" ] ;then
     if [[ $1 = "--help" ]] || [[ $1 = "-help" ]] || [[ $1 = "-h" ]];then
         echo "****************************** 脚本使用说明 *****************************"
-        echo "用途：CPU使用信息、内存使用信息、磁盘使用信息、TCP连接状态"
+        echo "用途：CPU使用信息、内存使用信息、磁盘使用信息、TCP连接状态、CPU占用前10名、内存占用前10名"
         echo "参数：参数                    是否必传    说明"
         echo "      --help; -help; -h        false      查看脚本使用说明"
         echo "备注：无"
@@ -53,11 +53,23 @@ function disk_use() {
 # tcp状态
 function tcp_status() {
     echo -e "\033[35m========================== TCP连接状态: =========================\033[0m"
-  summary=$(ss -antp | awk '{status[$1]++}END{for(i in status) printf i":"status[i]" "}')
-  echo "TCP连接状态 - $summary"
+    summary=$(ss -antp | awk '{status[$1]++}END{for(i in status) printf i":"status[i]" "}')
+    echo "TCP连接状态 - $summary"
+}
+
+function cpu_top10() {
+    echo -e "\033[35m========================== CPU占用前10: ==========================\033[0m"
+    ps -eo user,pid,pcpu,pmem,args --sort=-pcpu |head -n 10
+}
+
+function memory_top10() {
+    echo -e "\033[35m========================== 内存占用前10: ==========================\033[0m"
+    ps -eo user,pid,pcpu,pmem,args --sort=-pmem |head -n 10
 }
 
 cpu_use
 memory_use
 disk_use
 tcp_status
+cpu_top10
+memory_top10
