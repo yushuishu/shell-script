@@ -6,8 +6,6 @@ shopt -s globstar
 # ================================================== 使用此脚本，只需修改这里的变量即可 ===================================
 # postgresql 安装目录
 PG_HOME="/usr/lib/postgresql/14/bin"
-# postgresql 数据目录
-PG_DATA=" /var/lib/postgresql/14/main"
 # 备份文件存储目录
 PG_BACKUP_DIR="/opt/pg_backup"
 # 备份的数据库
