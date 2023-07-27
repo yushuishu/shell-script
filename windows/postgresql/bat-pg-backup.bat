@@ -5,9 +5,7 @@ REM 用途：备份pg数据库
 
 REM ================================================== 使用此脚本，只需修改这里的变量即可 ===================================
 REM postgresql 安装目录
-set "PG_HOME=E:\application\postgresql14\bin"
-REM postgresql 数据目录
-set "PG_DATA=E:\application\postgresql14\data"
+set "PG_HOME=D:\app\main\postgresql14\bin"
 REM 备份文件存储目录
 set "PG_BACKUP_DIR=D:\pg_backup"
 REM 备份的数据库
@@ -23,6 +21,13 @@ set "PG_USER=postgres"
 REM 用户密码
 set "PG_PASSWORD=123456"
 REM ====================================================================================================================
+
+REM 判断备份的路径是否存在，不存在就创建
+if not exist "%PG_BACKUP_DIR%" (
+    echo 备份文件存储目录不存在，正在创建...
+    mkdir "%PG_BACKUP_DIR%"
+    echo 文件夹创建成功。
+)
 
 REM 获取当前日期
 for /f "tokens=1-3 delims=-/. " %%i in ("%date%") do (
