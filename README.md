@@ -13,7 +13,7 @@ Windows平台和Linux平台下使用、总结、收集的脚本（bash、bat）
 
 ## 预览
 
-[xshell使用](images/script-01.png)
+![xshell使用](images/script-01.png)
 
 ## 项目结构说明
 
