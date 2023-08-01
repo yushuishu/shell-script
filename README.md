@@ -13,7 +13,8 @@ Windows平台和Linux平台下使用、总结、收集的脚本（bash、bat）
 
 ## 预览
 
-![xshell使用](images/script-01.png)
+![script-01](https://github.com/yushuishu/shell-script/assets/50919172/9b129ee5-be4f-4a00-b423-6fdff7fec507)
+
 
 ## 项目结构说明
 
