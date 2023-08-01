@@ -1,55 +1,24 @@
 # shell-script
 
-## 总结常用技巧
+<p>
+  <a href="https://www.microsoft.com/zh-cn"><img src="https://img.shields.io/badge/Windows-%3E=10-green.svg" alt="Windows compatility"></a>
+  <a href="https://ubuntu.com/download/server"><img src="https://img.shields.io/badge/Ubuntu-%3E=20.04.5-blue.svg" alt="Ubuntu compatility"></a>
+</p>
 
-> 自定义颜色文本
+## 介绍
 
+项目基于 [Ubuntu@20.04.5](https://ubuntu.com/download/server) 开发，开发环境使用 [Windows@10](https://www.microsoft.com/zh-cn)，[VMware@15pro](https://www.vmware.com/cn.html)。
 
-红色文本：
+Windows平台和Linux平台下使用、总结、收集的脚本（bash、bat）
 
-```shell
-echo -e "\033[31m红色文本\033[0m"
-```
+## 预览
 
+[xshell使用](images/script-01.png)
 
-绿色文本：
+## 项目结构说明
 
-```shell
-echo -e "\033[32m绿色文本\033[0m"
-```
+## 使用
 
+不通场景下的脚本，需要简单修改脚本内容，也就是代码逻辑变量，一般放在脚本文件顶部区域（有注释），比如数据库备份脚本，就需要修改默认要备份的数据库，以及主机、用户名、密码等信息
 
-黄色文本：
-
-```shell
-echo -e "\033[33m黄色文本\033[0m"
-```
-
-
-蓝色文本：
-
-```shell
-echo -e "\033[34m蓝色文本\033[0m"
-```
-
-
-紫色文本：
-
-```shell
-echo -e "\033[35m紫色文本\033[0m"
-```
-
-
-青色文本：
-
-```shell
-echo -e "\033[36m青色文本\033[0m"
-```
-
-
-白色文本：
-
-```shell
-echo -e "\033[37m白色文本\033[0m"
-```
-
+## 引用
