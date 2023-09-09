@@ -24,6 +24,7 @@ if [ -n "$1" ]; then
     echo "      -n                       false      安装Nginx，指定安装包路径"
     echo "      -r                       false      安装Redis-v7.x，指定安装包路径"
     echo "备注：jdk是环境软件，会安装到/usr/local目录下。"
+    echo "          （安装jdk，使用 . 执行脚本，配置文件才生效，如果使用 sh 或 ./ 执行脚本，需要再次执行source /etc/profile）"
     echo "     nginx和redis都是应用型软件，会安装到/opt目录。"
     echo "************************************************************************"
     exit 0
@@ -61,13 +62,14 @@ echo "请查看日志文件：tail -1000f ./sh-install-jdk-nginx-redis.log"
 # 定义动画持续时间（秒）
 duration=1
 # 计算每个点的间隔时间
-interval=0.01
+interval=0.1
 # 计算点的总数
 total_points=$(bc <<<"$duration / $interval")
 for ((i = 1; i <= total_points; i++)); do
-  echo -n "====="
+  echo -n "===" >>sh-install-jdk-nginx-redis.log
   sleep $interval
 done
+echo "" >>sh-install-jdk-nginx-redis.log
 
 # 检查防火墙是否开启，开放指定端口号
 check_and_open_firewall_port() {
@@ -94,16 +96,19 @@ function base_lib() {
   # 计算点的总数
   total_points=$(bc <<<"$duration / $interval")
   for ((i = 1; i <= total_points; i++)); do
-    echo -n "."
+    echo -n "." >>sh-install-jdk-nginx-redis.log
     sleep $interval
   done
 
-  apt-get update && apt-get install -y gcc >>sh-install-jdk-nginx-redis.log && apt-get install -y libpcre3 libpcre3-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y zlib1g zlib1g-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y openssl >>sh-install-jdk-nginx-redis.log && apt-get install -y libssl-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y make >>sh-install-jdk-nginx-redis.log
+  apt-get update >>sh-install-jdk-nginx-redis.log && apt-get install -y gcc >>sh-install-jdk-nginx-redis.log && apt-get install -y libpcre3 libpcre3-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y zlib1g zlib1g-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y openssl >>sh-install-jdk-nginx-redis.log && apt-get install -y libssl-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y make >>sh-install-jdk-nginx-redis.log
 
 }
 
 # 安装jdk
 function jdk() {
+  if [ -z "$JDK_PACKAGE_PATH" ]; then
+    return
+  fi
   echo "" >>sh-install-jdk-nginx-redis.log
   echo -n "----------------------------------------------------------------》开始安装jdk" >>sh-install-jdk-nginx-redis.log
   # 创建java目录，解压jdk
@@ -114,7 +119,7 @@ function jdk() {
   # 计算点的总数
   total_points=$(bc <<<"$duration / $interval")
   for ((i = 1; i <= total_points; i++)); do
-    echo -n "."
+    echo -n "." >>sh-install-jdk-nginx-redis.log
     sleep $interval
   done
 
@@ -150,6 +155,9 @@ function jdk() {
 
 # 安装nginx
 function nginx() {
+  if [ -z "$NGINX_PACKAGE_PATH" ]; then
+    return
+  fi
   echo "" >>sh-install-jdk-nginx-redis.log
   echo -n "----------------------------------------------------------------》开始安装nginx" >>sh-install-jdk-nginx-redis.log
   # 定义动画持续时间（秒）
@@ -159,7 +167,7 @@ function nginx() {
   # 计算点的总数
   total_points=$(bc <<<"$duration / $interval")
   for ((i = 1; i <= total_points; i++)); do
-    echo -n "."
+    echo -n "." >>sh-install-jdk-nginx-redis.log
     sleep $interval
   done
 
@@ -181,7 +189,7 @@ function nginx() {
   fi
 
   # 配置、编译、安装
-  ./configure --prefix="${nginx_home}" && make && make install >>sh-install-jdk-nginx-redis.log
+  "${NGINX_DIR}/source-package/${nginx_dir_name}/configure" --prefix="${nginx_home}" && make && make install >>sh-install-jdk-nginx-redis.log
 
   # 开启端口
   check_and_open_firewall_port 80
@@ -190,6 +198,9 @@ function nginx() {
 
 # 安装redis
 function redis() {
+  if [ -z "$REDIS_PACKAGE_PATH" ]; then
+    return
+  fi
   echo "" >>sh-install-jdk-nginx-redis.log
   echo -n "----------------------------------------------------------------》开始安装redis" >>sh-install-jdk-nginx-redis.log
   # 定义动画持续时间（秒）
@@ -199,7 +210,7 @@ function redis() {
   # 计算点的总数
   total_points=$(bc <<<"$duration / $interval")
   for ((i = 1; i <= total_points; i++)); do
-    echo -n "."
+    echo -n "." >>sh-install-jdk-nginx-redis.log
     sleep $interval
   done
 
@@ -221,7 +232,7 @@ function redis() {
   fi
 
   # 配置、编译、安装
-  ./configure --prefix="${redis_home}" && make && make install >>sh-install-jdk-nginx-redis.log
+  "${REDIS_DIR}/source-package/${redis_dir_name}/configure" --prefix="${redis_home}" && make && make install >>sh-install-jdk-nginx-redis.log
 
   # 开启端口
   check_and_open_firewall_port 6379
