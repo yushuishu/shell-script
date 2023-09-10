@@ -72,6 +72,11 @@ for ((i = 1; i <= total_points; i++)); do
 done
 echo "" >>sh-install-jdk-nginx-redis.log
 
+
+# 当前目录
+RUN_DIR=$(pwd)
+
+
 # 检查防火墙是否开启，开放指定端口号
 check_and_open_firewall_port() {
   port=\$1
@@ -110,6 +115,7 @@ function jdk() {
   if [ -z "$JDK_PACKAGE_PATH" ]; then
     return
   fi
+  cd "${RUN_DIR}" || return
   echo "" >>sh-install-jdk-nginx-redis.log
   echo -n "----------------------------------------------------------------》开始安装jdk" >>sh-install-jdk-nginx-redis.log
   echo "" >>sh-install-jdk-nginx-redis.log
@@ -160,6 +166,7 @@ function nginx() {
   if [ -z "$NGINX_PACKAGE_PATH" ]; then
     return
   fi
+  cd "${RUN_DIR}" || return
   echo "" >>sh-install-jdk-nginx-redis.log
   echo -n "----------------------------------------------------------------》开始安装nginx" >>sh-install-jdk-nginx-redis.log
   echo "" >>sh-install-jdk-nginx-redis.log
@@ -205,6 +212,7 @@ function redis() {
   if [ -z "$REDIS_PACKAGE_PATH" ]; then
     return
   fi
+  cd "${RUN_DIR}" || return
   echo "" >>sh-install-jdk-nginx-redis.log
   echo -n "----------------------------------------------------------------》开始安装redis" >>sh-install-jdk-nginx-redis.log
   echo "" >>sh-install-jdk-nginx-redis.log
