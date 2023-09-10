@@ -189,7 +189,7 @@ function nginx() {
   fi
 
   # 配置、编译、安装
-  "${NGINX_DIR}/source-package/${nginx_dir_name}/configure" --prefix="${nginx_home}" && make && make install >>sh-install-jdk-nginx-redis.log
+  "${NGINX_DIR}/source-package/${nginx_dir_name}/configure" --prefix="${nginx_home}" >>sh-install-jdk-nginx-redis.log && make >>sh-install-jdk-nginx-redis.log && make install >>sh-install-jdk-nginx-redis.log
 
   # 开启端口
   check_and_open_firewall_port 80
@@ -231,8 +231,8 @@ function redis() {
     return 1
   fi
 
-  # 配置、编译、安装
-  "${REDIS_DIR}/source-package/${redis_dir_name}/configure" --prefix="${redis_home}" && make && make install >>sh-install-jdk-nginx-redis.log
+  # 编译、安装（Redis没有configure）
+  make >>sh-install-jdk-nginx-redis.log && make install --prefix="${redis_home}" >>sh-install-jdk-nginx-redis.log
 
   # 开启端口
   check_and_open_firewall_port 6379
