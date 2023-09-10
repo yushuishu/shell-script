@@ -24,7 +24,8 @@ if [ -n "$1" ]; then
     echo "      -n                       false      安装Nginx，指定安装包路径"
     echo "      -r                       false      安装Redis-v7.x，指定安装包路径"
     echo "备注：jdk是环境软件，会安装到/usr/local目录下。"
-    echo "          （安装jdk，使用 . 执行脚本，配置文件才生效，如果使用 sh 或 ./ 执行脚本，需要再次执行source /etc/profile）"
+    echo "          （安装jdk，使用【. ./my_script】或【source ./my_script】执行安装脚本，环境变量配置文件才生效，"
+    echo "            如果使用【sh my_script】或【./my_script】执行脚本，结束之后需要再次执行【source /etc/profile】）"
     echo "     nginx和redis都是应用型软件，会安装到/opt目录。"
     echo "************************************************************************"
     exit 0
@@ -111,6 +112,7 @@ function jdk() {
   fi
   echo "" >>sh-install-jdk-nginx-redis.log
   echo -n "----------------------------------------------------------------》开始安装jdk" >>sh-install-jdk-nginx-redis.log
+  echo "" >>sh-install-jdk-nginx-redis.log
   # 创建java目录，解压jdk
   # 定义动画持续时间（秒）
   duration=0.6
@@ -160,6 +162,7 @@ function nginx() {
   fi
   echo "" >>sh-install-jdk-nginx-redis.log
   echo -n "----------------------------------------------------------------》开始安装nginx" >>sh-install-jdk-nginx-redis.log
+  echo "" >>sh-install-jdk-nginx-redis.log
   # 定义动画持续时间（秒）
   duration=0.6
   # 计算每个点的间隔时间
@@ -189,7 +192,7 @@ function nginx() {
   fi
 
   # 配置、编译、安装
-  "${NGINX_DIR}/source-package/${nginx_dir_name}/configure" --prefix="${nginx_home}" >>sh-install-jdk-nginx-redis.log && make >>sh-install-jdk-nginx-redis.log && make install >>sh-install-jdk-nginx-redis.log
+  "${NGINX_DIR}/source-package/${nginx_dir_name}/configure" --prefix="${nginx_home}" >>sh-install-jdk-nginx-redis.log && "${NGINX_DIR}/source-package/${nginx_dir_name}/make" >>sh-install-jdk-nginx-redis.log && "${NGINX_DIR}/source-package/${nginx_dir_name}/make" install >>sh-install-jdk-nginx-redis.log
 
   # 开启端口
   check_and_open_firewall_port 80
@@ -203,6 +206,7 @@ function redis() {
   fi
   echo "" >>sh-install-jdk-nginx-redis.log
   echo -n "----------------------------------------------------------------》开始安装redis" >>sh-install-jdk-nginx-redis.log
+  echo "" >>sh-install-jdk-nginx-redis.log
   # 定义动画持续时间（秒）
   duration=0.6
   # 计算每个点的间隔时间
@@ -232,7 +236,7 @@ function redis() {
   fi
 
   # 编译、安装（Redis没有configure）
-  make >>sh-install-jdk-nginx-redis.log && make install --prefix="${redis_home}" >>sh-install-jdk-nginx-redis.log
+  "${REDIS_DIR}/source-package/${redis_dir_name}/make" >>sh-install-jdk-nginx-redis.log && "${REDIS_DIR}/source-package/${redis_dir_name}/make" install --prefix="${redis_home}" >>sh-install-jdk-nginx-redis.log
 
   # 开启端口
   check_and_open_firewall_port 6379
