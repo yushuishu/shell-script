@@ -23,10 +23,8 @@ if [ -n "$1" ]; then
     echo "      -j                       false      安装Jdk-v17.x，指定安装包路径"
     echo "      -n                       false      安装Nginx，指定安装包路径"
     echo "      -r                       false      安装Redis-v7.x，指定安装包路径"
-    echo "备注：jdk是环境软件，会安装到/usr/local目录下。"
-    echo "          （安装jdk，使用【. ./my_script】或【source ./my_script】执行安装脚本，环境变量配置文件才生效，"
-    echo "            如果使用【sh my_script】或【./my_script】执行脚本，结束之后需要再次执行【source /etc/profile】）"
-    echo "     nginx和redis都是应用型软件，会安装到/opt目录。"
+    echo "备注：jdk是环境软件，会安装到/usr/local目录下，结束安装之后，需要执行【source /etc/profile】刷新配置文件）"
+    echo "     nginx和redis都是应用型软件，会安装到/opt目录下。"
     echo "************************************************************************"
     exit 0
   else
