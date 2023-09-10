@@ -182,17 +182,18 @@ function nginx() {
   # 创建目录
   mkdir -p "${NGINX_DIR}/source-package" && tar -xvf "${NGINX_PACKAGE_PATH}" -C "${NGINX_DIR}/source-package" >>sh-install-jdk-nginx-redis.log
   # 检查解压后的目录是否存在，以及是否为空
-  if [ ! -d "$NGINX_DIR/source-package" ]; then
+  if [ ! -d "$NGINX_DIR/source-package/$nginx_dir_name" ]; then
     echo "解压nginx安装包失败" >>sh-install-jdk-nginx-redis.log
     return 1
   fi
-  if [ -z "$(ls -A $NGINX_DIR/source-package)" ]; then
+  if [ -z "$(ls -A $NGINX_DIR/source-package/$nginx_dir_name)" ]; then
     echo "解压nginx安装包失败，解压后的文件目录为空：${NGINX_DIR}/source-package" >>sh-install-jdk-nginx-redis.log
     return 1
   fi
 
   # 配置、编译、安装
-  "${NGINX_DIR}/source-package/${nginx_dir_name}/configure" --prefix="${nginx_home}" >>sh-install-jdk-nginx-redis.log && "${NGINX_DIR}/source-package/${nginx_dir_name}/make" >>sh-install-jdk-nginx-redis.log && "${NGINX_DIR}/source-package/${nginx_dir_name}/make" install >>sh-install-jdk-nginx-redis.log
+  cd "${NGINX_DIR}/source-package/${nginx_dir_name}" || return 1
+  "./configure" --prefix="${nginx_home}" >>sh-install-jdk-nginx-redis.log && make >>sh-install-jdk-nginx-redis.log && make install >>sh-install-jdk-nginx-redis.log
 
   # 开启端口
   check_and_open_firewall_port 80
@@ -226,17 +227,18 @@ function redis() {
   # 创建目录
   mkdir -p "${REDIS_DIR}/source-package" && tar -xvf "${REDIS_PACKAGE_PATH}" -C "${REDIS_DIR}/source-package" >>sh-install-jdk-nginx-redis.log
   # 检查解压后的目录是否存在，以及是否为空
-  if [ ! -d "$REDIS_DIR/source-package" ]; then
+  if [ ! -d "$REDIS_DIR/source-package/$redis_dir_name" ]; then
     echo "解压redis安装包失败" >>sh-install-jdk-nginx-redis.log
     return 1
   fi
-  if [ -z "$(ls -A $REDIS_DIR/source-package)" ]; then
+  if [ -z "$(ls -A $REDIS_DIR/source-package/$redis_dir_name)" ]; then
     echo "解压redis安装包失败，解压后的文件目录为空：${REDIS_DIR}/source-package" >>sh-install-jdk-nginx-redis.log
     return 1
   fi
 
   # 编译、安装（Redis没有configure）
-  "${REDIS_DIR}/source-package/${redis_dir_name}/make" >>sh-install-jdk-nginx-redis.log && "${REDIS_DIR}/source-package/${redis_dir_name}/make" install --prefix="${redis_home}" >>sh-install-jdk-nginx-redis.log
+  cd "${REDIS_DIR}/source-package/${redis_dir_name}" || return 1
+  make >>sh-install-jdk-nginx-redis.log && make install --prefix="${redis_home}" >>sh-install-jdk-nginx-redis.log
 
   # 开启端口
   check_and_open_firewall_port 6379
