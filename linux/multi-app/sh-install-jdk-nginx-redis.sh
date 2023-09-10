@@ -106,7 +106,7 @@ function base_lib() {
     sleep $interval
   done
 
-  apt-get update >>sh-install-jdk-nginx-redis.log && apt-get install -y gcc >>sh-install-jdk-nginx-redis.log && apt-get install -y libpcre3 libpcre3-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y zlib1g zlib1g-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y openssl >>sh-install-jdk-nginx-redis.log && apt-get install -y libssl-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y make >>sh-install-jdk-nginx-redis.log
+  apt-get update >>sh-install-jdk-nginx-redis.log && apt-get install -y gcc >>sh-install-jdk-nginx-redis.log && apt-get install -y libpcre3 libpcre3-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y zlib1g zlib1g-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y openssl >>sh-install-jdk-nginx-redis.log && apt-get install -y libssl-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y make >>sh-install-jdk-nginx-redis.log && apt-get install -y pkg-config >>sh-install-jdk-nginx-redis.log
 
 }
 
@@ -246,7 +246,12 @@ function redis() {
 
   # 编译、安装（Redis没有configure）
   cd "${REDIS_DIR}/source-package/${redis_dir_name}" || return 1
-  make >>sh-install-jdk-nginx-redis.log && make install --prefix="${redis_home}" >>sh-install-jdk-nginx-redis.log
+  make >>sh-install-jdk-nginx-redis.log && cd src && make install PREFIX="${redis_home}" >>sh-install-jdk-nginx-redis.log
+
+  # 不管是否成功，使用命令选项-p 来创建目录，防止上一步make install安装失败
+  mkdir -p "${REDIS_DIR}/${redis_dir_name}/conf"
+  # 拷贝配置文件redis.conf
+  cp "${REDIS_DIR}/source-package/${redis_dir_name}/redis.conf" "${REDIS_DIR}/${redis_dir_name}/conf"
 
   # 开启端口
   check_and_open_firewall_port 6379
