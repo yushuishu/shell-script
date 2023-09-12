@@ -38,7 +38,7 @@ echo -e "\033[36m/////////////////////////////////////// sh-install-pg /////////
 # 检查安装包是否存在
 if [ -z "$PG_PACKAGE_PATH" ]; then
     echo "指定的安装包不存在"
-    return
+    exit 0
 fi
 
 # 检查防火墙是否开启，开放指定端口号
@@ -91,7 +91,7 @@ function pg() {
         exit 0
     fi
 
-    # 配置、编译、安装（执行时间约8分钟左右）
+    # 配置、编译、安装（执行时间约5分钟左右）
     cd "${PG_DIR}/source-package/${pg_dir_name}" || return 1
     "./configure" --prefix="${pg_home}" && make && make install
     if [ ! -d "$pg_home" ]; then
@@ -102,31 +102,39 @@ function pg() {
         echo "编译安装失败，解压后的文件目录为空：${pg_home}"
         exit 0
     fi
-
-    # 创建数据目录
-    mkdir "${pg_home}/data"
+    # bin目录
+    pg_bin="${pg_home}/bin"
 
     # 创建用户组和用户。pg是无法使用root账户进行初始化操作的，需要普通用户，名称最好是postgres（一般情况下也都是这个名称）。然后将数据目录授权给postgres用户
     mkdir /home/postgres
     groupadd postgres
     useradd -d /home/postgres -g postgres -s /bin/bash postgres
     echo postgres:123456 | chpasswd
+    chown -R postgres:postgres /home/postgres/
+
+    # 创建数据目录，权限交给用户postgres
+    mkdir "${pg_home}/data"
     chown postgres "${pg_home}/data"
+    # 开放pg端口
     check_and_open_firewall_port 5432
 
+    # postgres用户执行命令，使用-c选项来执行命令，如果切换到postgres用户，会直接导致脚本运行结束
     # 初始化
     #   -D 指定数据库数据位置
     #   -U 选择数据库superuser的用户名。默认 为运行initdb的用户的名称。而postgresql数据库的默认名称是postgres，所以创建用户组和用户的时候名字是postgres
     #   -W 对于新的超级用户提示输入口令
     #   -E 指定数据库编码，一般为UTF8。这也是稍后创建任何数据库的默认编码
-    su - postgres
-    cd "${pg_home}/bin" || exit 0
-    ./initdb -E UTF8 -D "${pg_home}/data"
+    su - postgres -c "${pg_bin}/initdb -E UTF8 -D ${pg_home}/data"
     # 启动服务
-    ./pg_ctl -D "${pg_home}/data" start
+    su - postgres -c "${pg_bin}/pg_ctl -D ${pg_home}/data start"
     # 修改数据库访问密码
-    ./psql -c "alter user postgres with encrypted password '123456';"
-    \q
+    su - postgres -c "${pg_bin}/psql -c alter user postgres with encrypted password '123456';"
+    # 重启服务（自行选择是否重启）
+    #su - postgres -c "${pg_bin}/pg_ctl -D ${pg_home}/data restart"
+    # 安装好的pg主目录权限，交给用户postgres
+    chown -R postgres:postgres "${pg_home}"
+
+
 
     echo "安装成功，数据库目录为：${pg_home}"
     echo "数据库密码为：123456"
