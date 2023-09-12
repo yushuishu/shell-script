@@ -69,7 +69,7 @@ function base_lib() {
         sleep $interval
     done
 
-    apt-get update && apt-get install -y gcc && apt-get install -y libpcre3 libpcre3-dev && apt-get install -y zlib1g zlib1g-dev && apt-get install -y openssl && apt-get install -y libssl-dev && apt-get install -y make && apt-get install -y pkg-config && apt-get install -y readline && apt-get install -y readline-dev && apt-get install -y zlib-devel
+    apt-get update && apt-get install -y gcc && apt-get install -y libpcre3 libpcre3-dev && apt-get install -y ruby && apt-get install -y zlib1g zlib1g-dev && apt-get install -y openssl && apt-get install -y libssl-dev && apt-get install -y make && apt-get install -y pkg-config && apt-get install -y libreadline-dev
 
 }
 
@@ -119,19 +119,56 @@ function pg() {
     #   -U 选择数据库superuser的用户名。默认 为运行initdb的用户的名称。而postgresql数据库的默认名称是postgres，所以创建用户组和用户的时候名字是postgres
     #   -W 对于新的超级用户提示输入口令
     #   -E 指定数据库编码，一般为UTF8。这也是稍后创建任何数据库的默认编码
-    su postgres
-    cd "${pg_home}/bin"
+    su - postgres
+    cd "${pg_home}/bin" || exit 0
     ./initdb -E UTF8 -D "${pg_home}/data"
-
+    # 启动服务
+    ./pg_ctl -D "${pg_home}/data" start
     # 修改数据库访问密码
-    ./psql
-    alter user postgres with encrypted password '123456';
-    exit
+    ./psql -c "alter user postgres with encrypted password '123456';"
+    \q
 
-    # 配置远程访问
-    vi "${pg_home}/data/postgresql.conf"
+    echo "安装成功，数据库目录为：${pg_home}"
+    echo "数据库密码为：123456"
+    echo "==================================================== 根据需求，添加额外配置 ===================================================="
+    echo "远程访问（postgres权限操作）：vim配置文件postgresql.conf"
+    echo "              修改参数 listen_address = ’*’ 监听所有访问"
+    echo "              修改参数 password_encryption = scram-sha-256  密码验证开启"
+    echo "         vim配置文件pg_hba.conf"
+    echo "              ip范围配置（所有客户端都可以访问），在大约90行左右哪里，添加一行：host    all        all        0.0.0.0/0         scram-sha-256"
+    echo ""
+    echo "开机自启（root权限操作）：vim添加配置文件postgresql.service：vim /usr/lib/systemd/system/postgresql.service"
+    echo "              添加如下内容："
+    echo "                  [Unit]"
+    echo "                  Description=PostgreSQL database server"
+    echo "                  After=network.target"
+    echo "                  [Service]"
+    echo "                  Type=forking"
+    echo "                  User=postgres"
+    echo "                  Group=postgres"
+    echo "                  # Port number for server to listen on"
+    echo "                  Environment=PG_PORT=5432"
+    echo "                  # Location of database directory"
+    echo "                  Environment=PG_DATA=${pg_home}/data/"
+    echo "                  # Where to send early-startup messages from the server (before the logging"
+    echo "                  # options of postgresql.conf take effect)"
+    echo "                  # This is normally controlled by the global default set by systemd"
+    echo "                  # StandardOutput=syslog"
+    echo "                  # Disable OOM kill on the postmaster"
+    echo "                  OOMScoreAdjust=-1000"
+    echo "                  #ExecStartPre=${pg_home}/bin/postgresql-check-db-dir \${PG_DATA}"
+    echo "                  ExecStart=${pg_home}/bin/pg_ctl start -D \${PG_DATA} -s -o \"-p \${PG_PORT}\" -w -t 300"
+    echo "                  ExecStop=${pg_home}/bin/pg_ctl stop -D \${PG_DATA} -s -m fast"
+    echo "                  ExecReload=${pg_home}/bin/pg_ctl reload -D \${PG_DATA} -s"
+    echo "                  # Give a reasonable amount of time for the server to start up/shut down"
+    echo "                  TimeoutSec=300"
+    echo "                  [Install]"
+    echo "                  WantedBy=multi-user.target"
+    echo ""
+    echo "              设置权限：chmod 777 /usr/lib/systemd/system/postgresql.service"
 
 }
+
 
 base_lib
 pg

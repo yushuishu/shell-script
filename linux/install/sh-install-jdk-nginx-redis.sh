@@ -102,7 +102,7 @@ function base_lib() {
         sleep $interval
     done
 
-    apt-get update >>sh-install-jdk-nginx-redis.log && apt-get install -y gcc >>sh-install-jdk-nginx-redis.log && apt-get install -y libpcre3 libpcre3-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y zlib1g zlib1g-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y openssl >>sh-install-jdk-nginx-redis.log && apt-get install -y libssl-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y make >>sh-install-jdk-nginx-redis.log && apt-get install -y pkg-config >>sh-install-jdk-nginx-redis.log
+    apt-get update >>sh-install-jdk-nginx-redis.log && apt-get install -y gcc >>sh-install-jdk-nginx-redis.log && apt-get install -y libpcre3 libpcre3-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y ruby >>sh-install-jdk-nginx-redis.log && apt-get install -y zlib1g zlib1g-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y openssl >>sh-install-jdk-nginx-redis.log && apt-get install -y libssl-dev >>sh-install-jdk-nginx-redis.log && apt-get install -y make >>sh-install-jdk-nginx-redis.log && apt-get install -y pkg-config >>sh-install-jdk-nginx-redis.log
 
 }
 
