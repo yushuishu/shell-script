@@ -1,7 +1,7 @@
 #!/bin/bash
 shopt -s globstar
 
-# 用途：安装postgresql
+# 用途：安装postgresql（源码安装方式）
 
 # ================================================== 使用此脚本，只需修改这里的变量即可 ===================================
 # pg 安装目录：比如安装包为postgresql-14.5.tar.gz 安装成功后的目录为 /opt/postgresql/postgresql-14.5
@@ -14,7 +14,7 @@ if [ -n "$1" ]; then
         echo "用途：安装配置postgresql数据库，使用的是官网下载的源码安装包"
         echo "参数：参数                    是否必传    说明"
         echo "      --help; -help; -h        false      查看脚本使用说明"
-        echo "      -p                       true       安装>=安装postgresql14，指定安装包路径"
+        echo "      -p                       true       指定安装包路径"
         echo "************************************************************************"
         exit 0
     else
