@@ -161,7 +161,7 @@ function mysql() {
     cd "${mysql_home}/bin" || exit 0
     ./mysqld --defaults-file="${mysql_home}/my.cnf" --initialize-insecure --user=mysql
     # 启动服务
-    ./mysqld_safe --defaults-file=/opt/mysql/mysql-8.0.34-linux-glibc2.28-x86_64/my.cnf --user=mysql >>"${mysql_home}/logs/mysqld_safe.log" 2>&1 &
+    ./mysqld_safe --defaults-file="${mysql_home}/my.cnf" --user=mysql >>"${mysql_home}/logs/mysqld_safe.log" 2>&1 &
 
     # 登录客户端、设置root密码、设置远程访问、刷新服务
     ./mysql -u root --skip-password <<EOF
@@ -173,7 +173,7 @@ function mysql() {
 EOF
 
     # 关闭服务
-    ./mysqladmin --defaults-file=mysqladmin.cnf shutdown
+    ./mysqladmin -u -root -p123456 shutdown
 
     echo ""
     echo ""
