@@ -98,15 +98,17 @@ function mysql() {
     echo mysql:123456 | chpasswd
     chown -R mysql:mysql /home/mysql/
 
-    # 配置文件my.cnf
+    # 配置文件 my.cnf
     {
         echo "[mysql]"
         echo "# 设置mysql客户端默认字符集"
         echo "default-character-set=utf8"
+        echo "#socket=${mysql_home}/mysql.sock"
         echo "[mysqld]"
         echo "# 禁用MySQL服务器进行DNS反解析，DNS反解析可能会导致连接延迟或潜在的安全问题"
         echo "# 禁用之后，mysql的授权表中就不能使用主机名了，只能使用IP。（也就是只能用IP地址检查客户端的登录，不能用主机名）"
         echo "skip-name-resolve=1"
+        echo "#socket=${mysql_home}/mysql.sock"
         echo "# 设置3306端口"
         echo "port = 3306"
         echo "# 设置mysql的安装目录"
@@ -118,7 +120,7 @@ function mysql() {
         echo "# 允许最大连接数，默认151"
         echo "max_connections=200"
         echo "# 设置InnoDB存储引擎的缓冲池大小，默认为128MB"
-        echo "innodb_buffer_pool_size=128"
+        echo "innodb_buffer_pool_size=128M"
         echo "# 设置默认字符集，支持一些特殊表情符号（特殊表情符占用4个字节）"
         echo "character-set-server=utf8mb4"
         echo "# 设置字符集对应一些排序等规则，注意要和character-set-server对应"
@@ -129,13 +131,22 @@ function mysql() {
         echo "lower_case_table_names=1"
         echo "# 数据包发送的大小，如果有BLOB对象建议修改成1G"
         echo "max_allowed_packet=128M"
-        echo "慢查询sql日志设置（开启值可以是1或on)"
+        echo "# 慢查询sql日志设置（开启值可以是1或on)"
         echo "slow_query_log=1"
         echo "slow_query_log_file=${mysql_home}/logs/slow.log"
         echo "# 设置慢查询执行的秒数，单位秒，必须达到此值可被记录"
         echo "long_query_time=10"
+        echo "#[client]"
+        echo "#socket=${mysql_home}/mysql.sock"
     }>> "${mysql_home}/my.cnf"
-    
+
+    # 配置文件 mysqladmin.cnf
+    {
+        echo "[mysqladmin]"
+        echo "user=root"
+        echo "password=123456"
+    }>> "${mysql_home}/mysqladmin.cnf"
+
     # 创建mysql数据文件目录
     mkdir -p "${mysql_home}/data"
     # 创建日志文件
@@ -154,55 +165,58 @@ function mysql() {
 
     # 登录客户端、设置root密码、设置远程访问、刷新服务
     ./mysql -u root --skip-password <<EOF
-    \ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';
+    ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';
     use mysql;
     update user set host='%' where user='root';
     flush privileges;
-    quit;
     \q
 EOF
 
     # 关闭服务
-    ./mysqladmin -u root -p123456 shutdown
+    ./mysqladmin --defaults-file=mysqladmin.cnf shutdown
 
-
-
+    echo ""
     echo ""
     echo "安装成功，数据库目录为：${mysql_home}"
     echo "数据库密码为：123456"
     echo "端口号：3306"
-    echo "==================================================== 根据需求，添加额外配置 ===================================================="
-    echo "开机自启（root权限操作）：vim添加配置文件mysqld_safe.service：sudo vim /usr/lib/systemd/system/mysqld_safe.service"
-    echo "              添加如下内容："
-    echo "                    [Unit]"
-    echo "                    Description=MySQL Community Server"
-    echo "                    After=network.target"
-    echo "                    [Service]"
-    echo "                    Type=forking"
-    echo "                    User=mysql"
-    echo "                    Group=mysql"
-    echo "                    # Where to send early-startup messages from the server (before the logging"
-    echo "                    # options of postgresql.conf take effect)"
-    echo "                    # This is normally controlled by the global default set by systemd"
-    echo "                    # StandardOutput=syslog"
-    echo "                    # Disable OOM kill on the postmaster"
-    echo "                    OOMScoreAdjust=-1000"
-    echo "                    DynamicUser=true"
-    echo "                    PrivateTmp=true"
-    echo "                    # Give a reasonable amount of time for the server to start up/shut down"
-    echo "                    TimeoutSec=300"
-    echo "                    ExecStart=${mysql_home}/bin/mysqld_safe --defaults-file=${mysql_home}/my.cnf --user=mysql >>"${mysql_home}/logs/mysqld_safe.log" 2>&1 &"
-    echo "                    ExecStop=${mysql_home}/bin/mysqladmin -u root -p shutdown"
-    echo "                    ExecStopPost=/bin/sleep 3"
-    echo "                    ExecReload=${mysql_home}/bin/mysqladmin -u root -p --defaults-file=${mysql_home}/my.cnf --user=mysql reload"
-    echo "                    [Install]"
-    echo "                    WantedBy=multi-user.target"
-    echo "              设置权限：chmod 777 /usr/lib/systemd/system/mysqld_safe.service"
-    echo "              设置开机自启：systemctl enable mysqld_safe.service"
-    echo "              启动服务：systemctl start mysqld_safe.service"
-    echo "              停止服务：systemctl stop mysqld_safe.service"
-    echo "              重启服务：systemctl reload mysqld_safe.service"
-    echo "              服务状态：systemctl status mysqld_safe.service"
+
+    # 配置文件service
+    {
+        echo "[Unit]"
+        echo "Description=MySQL Community Server"
+        echo "After=network.target"
+        echo "[Service]"
+        echo "Type=forking"
+        echo "User=mysql"
+        echo "Group=mysql"
+        echo "# Where to send early-startup messages from the server (before the logging"
+        echo "# options of postgresql.conf take effect)"
+        echo "# This is normally controlled by the global default set by systemd"
+        echo "# StandardOutput=syslog"
+        echo "# Disable OOM kill on the postmaster"
+        echo "OOMScoreAdjust=-1000"
+        echo "DynamicUser=true"
+        echo "PrivateTmp=true"
+        echo "# Give a reasonable amount of time for the server to start up/shut down"
+        echo "TimeoutSec=300"
+        echo "ExecStart=${mysql_home}/bin/mysqld_safe --defaults-file=${mysql_home}/my.cnf --user=mysql >>"${mysql_home}/logs/mysqld_safe.log" 2>&1 &"
+        echo "ExecStop=${mysql_home}/bin/mysqladmin --defaults-file=${mysql_home}/mysqladmin.cnf shutdown"
+        echo "ExecStopPost=/bin/sleep 3"
+        # /bin/sh -c '...'是因为systemd只接受一个单一的命令，所以我们需要用/bin/sh -c来封装这个包含两个命令的命令序列。
+        echo "ExecReload=/bin/sh -c '${mysql_home}/bin/mysqladmin --defaults-file=${mysql_home}/mysqladmin.cnf shutdown && ${mysql_home}/bin/mysqld_safe --defaults-file=${mysql_home}/my.cnf --user=mysql >>${mysql_home}/logs/mysqld_safe.log 2>&1 &'"
+        echo "[Install]"
+        echo "WantedBy=multi-user.target"
+    }>> /usr/lib/systemd/system/mysqld_safe.service
+
+    chmod 777 /usr/lib/systemd/system/mysqld_safe.service
+
+    echo ""
+    echo "设置开机自启：systemctl enable mysqld_safe.service"
+    echo "启动服务：systemctl start mysqld_safe.service"
+    echo "停止服务：systemctl stop mysqld_safe.service"
+    echo "重启服务：systemctl reload mysqld_safe.service"
+    echo "服务状态：systemctl status mysqld_safe.service"
 
 }
 
