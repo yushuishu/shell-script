@@ -92,6 +92,7 @@ function mysql() {
     fi
 
     # 创建用户组和用户
+    echo "创建用户组和用户 ......"
     mkdir /home/mysql
     groupadd mysql
     useradd -d /home/mysql -g mysql -s /bin/bash mysql
@@ -99,6 +100,7 @@ function mysql() {
     chown -R mysql:mysql /home/mysql/
 
     # 配置文件 my.cnf
+    echo "配置文件my.cnf ......"
     {
         echo "[mysql]"
         echo "# 设置mysql客户端默认字符集"
@@ -141,6 +143,7 @@ function mysql() {
     }>> "${mysql_home}/my.cnf"
 
     # 配置文件 mysqladmin.cnf
+    echo "配置文件mysqladmin.cnf ......"
     {
         echo "[mysqladmin]"
         echo "user=root"
@@ -148,23 +151,37 @@ function mysql() {
     }>> "${mysql_home}/mysqladmin.cnf"
 
     # 创建mysql数据文件目录
+    echo "创建mysql数据文件目录 ......"
     mkdir -p "${mysql_home}/data"
     # 创建日志文件
+    echo "创建日志文件 ......"
     mkdir "${mysql_home}/logs"
     touch "${mysql_home}/logs/error.log"
     # 所属权限
     chown -R mysql:mysql "${mysql_home}"
     # 开放端口
+    echo "开放端口3306 ......"
     check_and_open_firewall_port 3306
 
     # 初始化 MySQL
-    cd "${mysql_home}/bin" || exit 0
+    echo "初始化MySQL ......"
+    cd "${mysql_home}/bin" || { echo "Failed to change directory：${mysql_home}/bin"; exit 1; }
     ./mysqld --defaults-file="${mysql_home}/my.cnf" --initialize-insecure --user=mysql
     # 启动服务
+    echo "启动服务 ......"
     ./mysqld_safe --defaults-file="${mysql_home}/my.cnf" --user=mysql >>"${mysql_home}/logs/mysqld_safe.log" 2>&1 &
+    # 睡眠5秒钟，等待服务启动，并使用pgrep命令检查给出提示，如果不进行休眠，下一行命令执行失败
+    sleep 5
+    if pgrep mysqld
+    then
+        echo "MySQL server is running"
+    else
+        echo "MySQL is not running"
+    fi
 
     # 登录客户端、设置root密码、设置远程访问、刷新服务
-    ./mysql -u root --skip-password <<EOF
+    echo "设置root密码、设置远程访问 ......"
+    ${mysql_home}/bin/mysql -u root --skip-password <<EOF
     ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';
     use mysql;
     update user set host='%' where user='root';
@@ -173,7 +190,11 @@ function mysql() {
 EOF
 
     # 关闭服务
-    ./mysqladmin -u -root -p123456 shutdown
+    echo "关闭服务 ......"
+    ./mysqladmin -u root -p123456 shutdown
+
+    # 所属权限
+    chown -R mysql:mysql "${mysql_home}"
 
     echo ""
     echo ""
@@ -182,6 +203,7 @@ EOF
     echo "端口号：3306"
 
     # 配置文件service
+    echo "配置service服务 ......"
     {
         echo "[Unit]"
         echo "Description=MySQL Community Server"
@@ -200,7 +222,7 @@ EOF
         echo "PrivateTmp=true"
         echo "# Give a reasonable amount of time for the server to start up/shut down"
         echo "TimeoutSec=300"
-        echo "ExecStart=${mysql_home}/bin/mysqld_safe --defaults-file=${mysql_home}/my.cnf --user=mysql >>"${mysql_home}/logs/mysqld_safe.log" 2>&1 &"
+        echo "ExecStart=${mysql_home}/bin/mysqld_safe --defaults-file=${mysql_home}/my.cnf --user=mysql >>${mysql_home}/logs/mysqld_safe.log 2>&1 &"
         echo "ExecStop=${mysql_home}/bin/mysqladmin --defaults-file=${mysql_home}/mysqladmin.cnf shutdown"
         echo "ExecStopPost=/bin/sleep 3"
         # /bin/sh -c '...'是因为systemd只接受一个单一的命令，所以我们需要用/bin/sh -c来封装这个包含两个命令的命令序列。
@@ -211,7 +233,6 @@ EOF
 
     chmod 777 /usr/lib/systemd/system/mysqld_safe.service
 
-    echo ""
     echo "设置开机自启：systemctl enable mysqld_safe.service"
     echo "启动服务：systemctl start mysqld_safe.service"
     echo "停止服务：systemctl stop mysqld_safe.service"
