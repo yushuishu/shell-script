@@ -4,8 +4,8 @@ shopt -s globstar
 # 用途：备份MYSQL数据库
 
 # ================================================== 使用此脚本，只需修改这里的变量即可 ===================================
-# MYSQL 安装目录
-MYSQL_HOME="/usr/local/mysql8/bin"
+# MYSQL 可执行文件目录
+MYSQL_HOME="/opt/mysql/mysql8/bin"
 # 备份文件存储目录
 MYSQL_BACKUP_DIR="/opt/mysql_backup"
 # 备份的数据库

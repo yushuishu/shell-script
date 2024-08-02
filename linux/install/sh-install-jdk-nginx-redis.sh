@@ -6,12 +6,15 @@ shopt -s globstar
 # ================================================== 使用此脚本，只需修改这里的变量即可 ===================================
 # jdk 安装目录：比如安装包为jdk-8u361-linux-x64.tar.gz 安装成功后的目录为 /usr/local/java/jdk1.8.0_361
 JDK_DIR="/usr/local/java"
+# 安装包路径
 JDK_PACKAGE_PATH=""
 # nginx 安装目录：比如安装包为nginx-1.18.0.tar.gz 安装成功后的目录为 /opt/nginx/nginx-1.18.0
 NGINX_DIR="/opt/nginx"
+# 安装包路径
 NGINX_PACKAGE_PATH=""
 # redis 安装目录：比如安装包为redis-7.0.13.tar.gz 安装成功后的目录为 /opt/redis/redis-7.0.13
 REDIS_DIR="/opt/redis"
+# 安装包路径
 REDIS_PACKAGE_PATH=""
 # ========================================================= 输入参数 =========================================================
 if [ -n "$1" ]; then
@@ -23,8 +26,8 @@ if [ -n "$1" ]; then
         echo "      -j                       false      安装>=Jdk-1.8，指定安装包路径"
         echo "      -n                       false      安装Nginx，指定安装包路径"
         echo "      -r                       false      安装Redis，指定安装包路径"
-        echo "备注：jdk是环境软件，会安装到/usr/local目录下，结束安装之后，需要执行【source /etc/profile】刷新配置文件）"
-        echo "     nginx和redis都是应用型软件，会安装到/opt目录下。"
+        echo "备注：jdk安装到/usr/local目录下，结束安装之后，需要执行【source /etc/profile】刷新配置文件）"
+        echo "     nginx和redis会安装到/opt目录下。"
         echo "************************************************************************"
         exit 0
     else
@@ -258,3 +261,6 @@ base_lib
 jdk
 nginx
 redis
+
+# 刷新配置文件
+echo "请刷新配置文件：source /etc/profile"

@@ -6,6 +6,7 @@ shopt -s globstar
 # ================================================== 使用此脚本，只需修改这里的变量即可 ===================================
 # mysql 安装目录：比如安装包为mysql-8.0.34-linux-glibc2.28-x86_64.tar.gz 安装成功后的目录为 /opt/mysql/mysql-8.0.34-linux-glibc2.28-x86_64
 MYSQL_DIR="/opt/mysql"
+# 安装包路径
 MYSQL_PACKAGE_PATH=""
 # ========================================================= 输入参数 =========================================================
 if [ -n "$1" ]; then
@@ -74,6 +75,8 @@ function base_lib() {
 }
 
 function mysql() {
+    # 检查目录是否存在
+    mkdir -p "${MYSQL_DIR}"
     # 解压后的mysql目录名，如：mysql-8.0.34-linux-glibc2.28-x86_64
     mysql_dir_name=$(tar -tf "${MYSQL_PACKAGE_PATH}" | head -1 | cut -f1 -d"/")
     # 完整目录路径，如：/opt/mysql/mysql-8.0.34-linux-glibc2.28-x86_64
@@ -212,16 +215,7 @@ EOF
         echo "Type=forking"
         echo "User=mysql"
         echo "Group=mysql"
-        echo "# Where to send early-startup messages from the server (before the logging"
-        echo "# options of postgresql.conf take effect)"
-        echo "# This is normally controlled by the global default set by systemd"
-        echo "# StandardOutput=syslog"
-        echo "# Disable OOM kill on the postmaster"
-        echo "OOMScoreAdjust=-1000"
-        echo "DynamicUser=true"
-        echo "PrivateTmp=true"
-        echo "# Give a reasonable amount of time for the server to start up/shut down"
-        echo "TimeoutSec=300"
+        echo "TimeoutSec=60"
         echo "ExecStart=${mysql_home}/bin/mysqld_safe --defaults-file=${mysql_home}/my.cnf --user=mysql >>${mysql_home}/logs/mysqld_safe.log 2>&1 &"
         echo "ExecStop=${mysql_home}/bin/mysqladmin --defaults-file=${mysql_home}/mysqladmin.cnf shutdown"
         echo "ExecStopPost=/bin/sleep 3"
@@ -233,6 +227,7 @@ EOF
 
     chmod 777 /usr/lib/systemd/system/mysqld_safe.service
 
+    echo "配置service服务完毕，可使用的服务命令如下："
     echo "设置开机自启：systemctl enable mysqld_safe.service"
     echo "启动服务：systemctl start mysqld_safe.service"
     echo "停止服务：systemctl stop mysqld_safe.service"
